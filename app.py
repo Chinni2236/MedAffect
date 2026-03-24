@@ -9,12 +9,30 @@ st.set_page_config(
     page_icon="🧠"
 )
 
-# ------------------ STYLING ------------------
+# ------------------ DARK THEME FIX ------------------
 st.markdown("""
 <style>
+
+/* Background */
 .stApp {
     background: linear-gradient(135deg, #020617, #0f172a);
     color: white;
+}
+
+/* FIX TEXT VISIBILITY */
+label, .stMarkdown, .stText, .stSlider label, .stSelectbox label {
+    color: white !important;
+    font-weight: 500;
+}
+
+/* Slider numbers */
+.stSlider span {
+    color: #38bdf8 !important;
+}
+
+/* Dropdown text fix */
+.stSelectbox div[data-baseweb="select"] {
+    color: black !important;
 }
 
 /* Title */
@@ -26,11 +44,20 @@ st.markdown("""
     text-shadow: 0px 0px 20px #00e5ff;
 }
 
+/* Subtitle */
 .subtitle {
     text-align: center;
     font-size: 18px;
     color: #94a3b8;
     margin-bottom: 30px;
+}
+
+/* Section headers */
+.section {
+    font-size: 22px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #38bdf8;
 }
 
 /* Glass Cards */
@@ -63,13 +90,6 @@ st.markdown("""
     border-radius: 10px;
 }
 
-/* Section headers */
-.section {
-    font-size: 22px;
-    margin-top: 20px;
-    margin-bottom: 10px;
-    color: #38bdf8;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -103,7 +123,7 @@ st.markdown('<div class="section">💊 Drug Properties</div>', unsafe_allow_html
 drug_hepatotoxic = st.selectbox("Hepatotoxic Drug", [0, 1])
 drug_renal = st.selectbox("Renal Impact Drug", [0, 1])
 
-# Convert inputs
+# Convert
 sex = 1 if sex == "Male" else 0
 
 input_data = np.array([age, sex, bmi, diabetes, alt, egfr, drug_hepatotoxic, drug_renal])
@@ -131,7 +151,6 @@ if st.button("🚀 Predict Risk"):
         else:
             return "#22c55e"
 
-    # Render card
     def render_card(title, value, emoji):
         color = get_color(value)
         percent = int(value * 100)
@@ -159,8 +178,8 @@ if st.button("🚀 Predict Risk"):
 
     st.markdown("---")
 
-    # Confidence Card
     conf_percent = int(confidence * 100)
+
     st.markdown(f"""
     <div class="card">
         <h3>📌 Overall Confidence</h3>
