@@ -9,35 +9,68 @@ st.set_page_config(
     page_icon="🧠"
 )
 
-# ------------------ DARK THEME ------------------
+# ------------------ STYLING ------------------
 st.markdown("""
-    <style>
-    body {
-        background-color: #0e1117;
-        color: white;
-    }
-    .stApp {
-        background-color: #0e1117;
-    }
-    .title {
-        text-align: center;
-        font-size: 40px;
-        font-weight: bold;
-        color: #00d4ff;
-    }
-    .subtitle {
-        text-align: center;
-        font-size: 18px;
-        color: #9aa4b2;
-        margin-bottom: 30px;
-    }
-    .card {
-        background-color: #161b22;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
-    }
-    </style>
+<style>
+.stApp {
+    background: linear-gradient(135deg, #020617, #0f172a);
+    color: white;
+}
+
+/* Title */
+.title {
+    text-align: center;
+    font-size: 50px;
+    font-weight: bold;
+    color: #00e5ff;
+    text-shadow: 0px 0px 20px #00e5ff;
+}
+
+.subtitle {
+    text-align: center;
+    font-size: 18px;
+    color: #94a3b8;
+    margin-bottom: 30px;
+}
+
+/* Glass Cards */
+.card {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(12px);
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0px 0px 20px rgba(0,229,255,0.1);
+    text-align: center;
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 0px 30px rgba(0,229,255,0.4);
+}
+
+/* Progress bars */
+.progress-bar {
+    height: 12px;
+    border-radius: 10px;
+    background: #1e293b;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.progress-fill {
+    height: 12px;
+    border-radius: 10px;
+}
+
+/* Section headers */
+.section {
+    font-size: 22px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #38bdf8;
+}
+</style>
 """, unsafe_allow_html=True)
 
 # ------------------ HEADER ------------------
@@ -51,7 +84,7 @@ heart_model = joblib.load("heart_model.pkl")
 scaler = joblib.load("scaler.pkl")
 
 # ------------------ INPUT SECTION ------------------
-st.markdown("### 🧍 Patient Information")
+st.markdown('<div class="section">🧍 Patient Information</div>', unsafe_allow_html=True)
 
 col1, col2 = st.columns(2)
 
@@ -65,18 +98,18 @@ with col2:
     alt = st.slider("ALT Level", 10.0, 100.0, 30.0)
     egfr = st.slider("eGFR", 30.0, 120.0, 80.0)
 
-st.markdown("### 💊 Drug Properties")
+st.markdown('<div class="section">💊 Drug Properties</div>', unsafe_allow_html=True)
 
 drug_hepatotoxic = st.selectbox("Hepatotoxic Drug", [0, 1])
 drug_renal = st.selectbox("Renal Impact Drug", [0, 1])
 
-# Convert
+# Convert inputs
 sex = 1 if sex == "Male" else 0
 
 input_data = np.array([age, sex, bmi, diabetes, alt, egfr, drug_hepatotoxic, drug_renal])
 
 # ------------------ PREDICTION ------------------
-if st.button("🔍 Predict Risk"):
+if st.button("🚀 Predict Risk"):
 
     input_scaled = scaler.transform([input_data])
 
@@ -89,48 +122,51 @@ if st.button("🔍 Predict Risk"):
     st.markdown("---")
     st.markdown("## 📊 Prediction Results")
 
-    def risk_color(val):
+    # Color logic
+    def get_color(val):
         if val > 0.6:
-            return "🔴 High"
+            return "#ff4d4d"
         elif val > 0.3:
-            return "🟡 Moderate"
+            return "#facc15"
         else:
-            return "🟢 Low"
+            return "#22c55e"
+
+    # Render card
+    def render_card(title, value, emoji):
+        color = get_color(value)
+        percent = int(value * 100)
+
+        st.markdown(f"""
+        <div class="card">
+            <h3>{emoji} {title}</h3>
+            <h1 style="color:{color};">{percent}%</h1>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width:{percent}%; background:{color};"></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.markdown(f"""
-        <div class="card">
-        <h3>🧠 Liver</h3>
-        <h2>{liver:.2f}</h2>
-        <p>{risk_color(liver)}</p>
-        </div>
-        """, unsafe_allow_html=True)
+        render_card("Liver Risk", liver, "🧠")
 
     with col2:
-        st.markdown(f"""
-        <div class="card">
-        <h3>🧬 Kidney</h3>
-        <h2>{kidney:.2f}</h2>
-        <p>{risk_color(kidney)}</p>
-        </div>
-        """, unsafe_allow_html=True)
+        render_card("Kidney Risk", kidney, "🧬")
 
     with col3:
-        st.markdown(f"""
-        <div class="card">
-        <h3>❤️ Heart</h3>
-        <h2>{heart:.2f}</h2>
-        <p>{risk_color(heart)}</p>
-        </div>
-        """, unsafe_allow_html=True)
+        render_card("Heart Risk", heart, "❤️")
 
     st.markdown("---")
 
+    # Confidence Card
+    conf_percent = int(confidence * 100)
     st.markdown(f"""
     <div class="card">
-    <h3>📌 Overall Confidence</h3>
-    <h2>{confidence:.2f}</h2>
+        <h3>📌 Overall Confidence</h3>
+        <h1 style="color:#00e5ff;">{conf_percent}%</h1>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width:{conf_percent}%; background:#00e5ff;"></div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
